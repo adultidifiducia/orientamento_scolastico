@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orientamento Scolastico</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#fafbfd;--bg-warm:#f8f6f3;--bg-card:#ffffff;--bg-input:#f4f5f7;
+  --accent:#4f46e5;--accent-light:#818cf8;--accent-bg:rgba(79,70,229,0.06);
+  --green:#059669;--green-light:#d1fae5;--amber:#d97706;--rose:#e11d48;--cyan:#0891b2;--violet:#7c3aed;
+  --text:#1e293b;--text-sec:#64748b;--text-mut:#94a3b8;
+  --border:#e2e8f0;--border-light:#f1f5f9;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.06);--shadow:0 4px 16px rgba(0,0,0,0.06);--shadow-lg:0 8px 30px rgba(0,0,0,0.08);
+  --radius:16px;--radius-sm:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;overscroll-behavior-y:contain;}
+body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;overscroll-behavior-y:contain;}
+body::before{content:'';position:fixed;top:0;left:0;right:0;height:280px;background:linear-gradient(180deg,rgba(79,70,229,0.03) 0%,rgba(8,145,178,0.015) 40%,transparent 100%);pointer-events:none;z-index:0;}
+.dot-bg{position:fixed;top:0;left:0;right:0;bottom:0;background-image:radial-gradient(circle,rgba(79,70,229,0.03) 1px,transparent 1px);background-size:30px 30px;pointer-events:none;z-index:0;}
+
+#sticky-header{z-index:102;background:rgba(255,255,255,0.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(226,232,240,0.7);padding:14px 24px 10px;transition:all .3s;display:none;box-shadow:0 2px 12px rgba(0,0,0,0.04);}
+#sticky-header.compact{padding:10px 24px 8px;}
+#sticky-header .ht{font-family:'Playfair Display',serif;font-size:1.15em;color:var(--accent);line-height:1.2;}
+#sticky-header.compact .ht{font-size:1.05em;}
+#sticky-header .hs{font-size:.78em;color:var(--text-sec);margin-top:2px;}
+#sticky-header.compact .hs{font-size:.72em;}
+#sticky-header .hi{font-size:.72em;color:var(--text-mut);margin-top:3px;line-height:1.4;max-height:3.0em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-overflow:ellipsis;transition:max-height .3s;}
+#sticky-header.compact .hi{max-height:2.8em;font-size:.68em;-webkit-line-clamp:2;}
+
+#progress-container{z-index:101;background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);padding:0;position:relative;}
+#progress-container #svBadgeWrap{position:absolute;top:-28px;right:10px;z-index:102;pointer-events:none;display:none;}
+#progress-container #svBadgeWrap.show{display:block;}
+#pbo{height:14px;background:var(--border-light);width:100%;border-radius:0 0 7px 7px;overflow:hidden;position:relative;box-shadow:inset 0 1px 3px rgba(0,0,0,0.08);}
+#pbi{height:100%;width:0%;background:linear-gradient(90deg,#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6);transition:width .5s cubic-bezier(.4,0,.2,1);border-radius:0 7px 7px 0;position:relative;box-shadow:0 2px 8px rgba(79,70,229,0.25),inset 0 1px 0 rgba(255,255,255,0.3);overflow:hidden;}
+#pbi::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);animation:shimmer 2.2s infinite;}
+@keyframes shimmer{0%{left:-100%;}100%{left:100%;};}
+#pbi-pct{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;font-size:.6em;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.4);white-space:nowrap;z-index:2;}
+
+.ctn{max-width:820px;margin:0 auto;padding:20px;position:relative;z-index:1;}
+
+.ws{text-align:center;padding:48px 20px;animation:fu .7s ease;}
+.ws h1{font-family:'Playfair Display',serif;font-size:2.5em;color:var(--text);margin-bottom:8px;line-height:1.15;}
+.ws h1 span{color:var(--accent);}
+.ws .ci{font-size:3.2em;display:block;margin-bottom:14px;animation:pu 2.5s infinite;}
+@keyframes pu{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+.ws p{color:var(--text-sec);font-size:1.05em;line-height:1.7;max-width:560px;margin:0 auto 26px;}
+.uf{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:26px;max-width:460px;margin:0 auto 26px;box-shadow:var(--shadow-sm);}
+.uf label{display:block;font-size:.75em;color:var(--text-mut);margin-bottom:4px;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;}
+.uf input{width:100%;padding:10px 13px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:1em;margin-bottom:13px;outline:none;transition:border .3s;}
+.uf input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 26px;border:none;border-radius:var(--radius-sm);font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:.92em;cursor:pointer;transition:all .25s;}
+.btn-p{background:var(--accent);color:#fff;box-shadow:0 2px 10px rgba(79,70,229,.2);}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(79,70,229,.3);}
+.btn-s{background:var(--bg-card);color:var(--text);border:1px solid var(--border);}
+.btn-s:hover{border-color:var(--accent);background:var(--accent-bg);}
+.btn-sm{padding:7px 14px;font-size:.8em;}
+.btn-g{background:var(--green);color:#fff;}
+.btn-g:hover{box-shadow:0 4px 14px rgba(5,150,105,.3);}
+
+.qs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0;}
+.qsc{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all .3s;position:relative;box-shadow:var(--shadow-sm);}
+.qsc:hover{transform:translateY(-3px);border-color:var(--accent-light);box-shadow:var(--shadow);}
+.qsc .qi{font-size:1.7em;display:block;margin-bottom:8px;}
+.qsc .qn{font-weight:700;font-size:.9em;margin-bottom:3px;}
+.qsc .qd{font-size:.76em;color:var(--text-sec);line-height:1.4;}
+.qsc .qb{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.68em;font-weight:800;}
+.qb.ok{background:var(--green-light);color:var(--green);}
+.qb.no{background:var(--bg-input);color:var(--text-mut);}
+.qsc.done{border-color:var(--green);background:linear-gradient(135deg,#f0fdf4,#f0f9ff);box-shadow:0 2px 12px rgba(5,150,105,.08);}
+.qsc.done .qn{color:var(--green);}
+
+@keyframes fu{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.qsec{animation:fu .4s ease;}
+.qc{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:10px;transition:all .4s;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);}
+.qc::after{content:'';position:absolute;top:0;left:0;width:0;height:100%;transition:width .5s;z-index:0;}
+.qc.ans::after{width:100%;background:linear-gradient(135deg,rgba(219,234,254,.5),rgba(209,250,229,.3));}
+.qc.ans{border-color:var(--accent-light);box-shadow:0 2px 10px rgba(79,70,229,.06);}
+.qc>*{position:relative;z-index:1;}
+.qc .qnum{font-family:'JetBrains Mono',monospace;font-size:.7em;color:var(--accent);font-weight:600;margin-bottom:5px;letter-spacing:.5px;}
+.qc.ans .qnum::after{content:' ✓';color:var(--green);font-weight:800;animation:pi .3s ease;}
+@keyframes pi{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+.qc .qt{font-size:.98em;line-height:1.55;margin-bottom:12px;}
+
+.ls{display:flex;gap:5px;flex-wrap:wrap;}
+.lo{flex:1;min-width:65px;text-align:center;padding:9px 5px;background:var(--bg-input);border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;user-select:none;}
+.lo:hover{border-color:var(--accent-light);background:#f0f0ff;transform:translateY(-1px);}
+.lo.sel{border-color:var(--accent);background:linear-gradient(135deg,#eef2ff,#ede9fe);box-shadow:0 0 0 2px var(--accent-bg);}
+.lo .lv{font-family:'JetBrains Mono',monospace;font-size:1.25em;font-weight:700;color:var(--accent);display:block;margin-bottom:1px;}
+.lo .ll{font-size:.62em;color:var(--text-sec);text-transform:uppercase;letter-spacing:.3px;font-weight:700;}
+.lo.sel .lv,.lo.sel .ll{color:var(--accent);}
+.lo .li{display:block;font-size:1.1em;line-height:1;margin-bottom:3px;color:var(--text-mut);transition:color .2s;}
+.lo.sel .li{color:var(--accent);}
+.lo[data-lv="0"] .li{color:#cbd5e1;}
+.lo[data-lv="1"] .li{color:#94a3b8;}
+.lo[data-lv="2"] .li{color:#64748b;}
+.lo[data-lv="3"] .li{color:var(--accent-light);}
+.lo[data-lv="4"] .li{color:var(--accent);}
+.lo.sel[data-lv] .li{color:var(--accent);}
+
+#toast{position:fixed;bottom:20px;left:20px;z-index:250;background:var(--green);color:#fff;padding:10px 18px;border-radius:var(--radius-sm);font-size:.85em;font-weight:600;box-shadow:0 6px 20px rgba(5,150,105,.35);opacity:0;transform:translateX(-20px);transition:opacity .25s,transform .25s;pointer-events:none;display:flex;align-items:center;gap:8px;}
+#toast.show{opacity:1;transform:translateX(0);}
+#toast.warn{background:var(--amber);box-shadow:0 6px 20px rgba(217,119,6,.35);}
+#toast.err{background:var(--rose);box-shadow:0 6px 20px rgba(225,29,72,.35);}
+
+#svBadge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;background:var(--green-light);color:var(--green);border-radius:12px;font-size:.65em;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.3px;white-space:nowrap;}
+#svBadge.mem{background:#fef3c7;color:#92400e;}
+#svBadge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulsedot 2s infinite;}
+@keyframes pulsedot{0%,100%{opacity:.5;}50%{opacity:1;}}
+
+.rst-banner{background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid #fbbf24;border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 2px 12px rgba(251,191,36,.15);}
+.rst-banner .rst-ic{font-size:1.6em;}
+.rst-banner .rst-tx{flex:1;min-width:200px;font-size:.88em;color:#78350f;line-height:1.4;}
+.rst-banner .rst-tx strong{color:#451a03;}
+.rst-banner .rst-bt{display:flex;gap:8px;flex-wrap:wrap;}
+
+.nb{display:flex;justify-content:space-between;align-items:center;padding:16px 0;margin-top:14px;border-top:1px solid var(--border);}
+.nc{font-family:'JetBrains Mono',monospace;font-size:.8em;color:var(--text-mut);}
+.tb{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:10px;background:var(--bg-card);border-radius:var(--radius-sm);border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+.tb .btn{font-size:.76em;padding:6px 12px;}
+
+.rp{animation:fu .5s ease;}
+.rc{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:26px;margin-bottom:18px;box-shadow:var(--shadow-sm);}
+.rc h3{font-family:'Playfair Display',serif;font-size:1.15em;margin-bottom:12px;color:var(--accent);}
+.sbc{margin-bottom:11px;}
+.sbl{display:flex;justify-content:space-between;margin-bottom:4px;font-size:.82em;}
+.sbl span:first-child{color:var(--text);font-weight:600;}
+.sbl span:last-child{color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:600;}
+.sb{height:8px;background:var(--bg-input);border-radius:4px;overflow:hidden;}
+.sbf{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1);background:linear-gradient(90deg,var(--accent),var(--accent-light));}
+.cc{position:relative;height:300px;margin:18px 0;}
+.nt{font-size:.93em;line-height:1.85;color:var(--text-sec);padding:22px;background:var(--bg-warm);border-radius:var(--radius-sm);border-left:4px solid var(--accent);}
+
+.mo{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);backdrop-filter:blur(4px);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.mo.act{display:flex;}
+.mc{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);max-width:700px;width:100%;max-height:80vh;overflow-y:auto;padding:26px;box-shadow:var(--shadow-lg);}
+.mc h2{font-family:'Playfair Display',serif;margin-bottom:12px;color:var(--accent);}
+.mc textarea{width:100%;min-height:300px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.78em;padding:14px;resize:vertical;outline:none;}
+.mc textarea:focus{border-color:var(--accent);}
+
+.st{position:fixed;bottom:18px;right:18px;z-index:200;background:var(--bg-card);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.15em;transition:all .3s;box-shadow:var(--shadow);}
+.st:hover{border-color:var(--accent);transform:scale(1.08);}
+
+@media print{
+  body{background:#fff!important;}
+  body::before,.dot-bg{display:none!important;}
+  .tb,.nb,.st,#sticky-wrapper,#sticky-header,#progress-container,#sticky-nav,.no-print{display:none!important;}
+  .ctn{max-width:100%;padding:8px;}
+  .rc{background:#fff!important;border:1px solid #ddd!important;break-inside:avoid;page-break-inside:avoid;box-shadow:none!important;}
+  .rc h3{color:#4338ca!important;}
+  .sb{background:#e5e7eb!important;}
+  .sbf{background:#6366f1!important;}
+  .nt{background:#f8f9fa!important;border-left-color:#6366f1!important;color:#374151!important;}
+  .ph{display:block!important;}
+  .cc{height:250px!important;}
+}
+.ph{display:none;text-align:center;margin-bottom:26px;padding-bottom:16px;border-bottom:3px solid var(--accent);}
+.ph h1{color:var(--accent);font-family:'Playfair Display',serif;font-size:1.7em;}
+.ph p{color:var(--text-sec);margin-top:3px;}
+
+@media(max-width:600px){.ws h1{font-size:1.6em;}.ls{flex-direction:column;}.lo{min-width:unset;}.qs{grid-template-columns:1fr 1fr;}.ctn{padding:10px;}#sticky-header .hi{-webkit-line-clamp:1;max-height:1.5em;}}
+@media(max-width:400px){.qs{grid-template-columns:1fr;}}
+input[type="file"]{display:none;}
+#sticky-nav{background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:8px 16px;display:none;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-light);box-shadow:0 2px 8px rgba(0,0,0,0.03);}
+#sticky-nav .btn{font-size:.78em;padding:7px 14px;}
+</style>
+</head>
+<body>
+<div class="dot-bg"></div>
+<div class="st" id="sndT" title="Audio on/off">🔊</div>
+<div id="sticky-wrapper" style="position:sticky;top:0;z-index:100;">
+<div id="sticky-header">
+  <div class="ht" id="hT"></div>
+  <div class="hs" id="hS"></div>
+  <div class="hi" id="hI"></div>
+</div>
+<div id="progress-container"><div id="pbo"><div id="pbi"><span id="pbi-pct"></span></div></div><div id="svBadgeWrap"><div id="svBadge"><span class="dot"></span><span id="svBadgeTxt">Autosave</span></div></div></div>
+<div id="sticky-nav"></div>
+</div>
+<div class="ctn" id="app"></div>
+<div id="toast"><span id="toastIc">💾</span><span id="toastTx">Salvato</span></div>
+<div class="mo" id="opM">
+  <div class="mc">
+    <h2>📋 Report Operatore</h2>
+    <p style="color:var(--text-sec);margin-bottom:12px;font-size:.86em;">Testo strutturato per analisi IA. Copia e incolla nel tuo assistente preferito.</p>
+    <textarea id="opT" readonly></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn btn-p btn-sm" onclick="cpOp()">📋 Copia negli appunti</button>
+      <button class="btn btn-s btn-sm" onclick="clMo()">Chiudi</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="impI" accept=".json" onchange="hImp(event)">
+<script>
+const Q=[
+{id:'fronteggiamento',title:'Modalità di Fronteggiamento',subtitle:'Come affronti le cose difficili?',instruction:'Leggi ogni frase e scegli quanto ti descrive. Pensa a come ti comporti davvero, non a come vorresti comportarti.',icon:'🛡️',
+scale:[{v:0,l:'Mai'},{v:1,l:'Raramente'},{v:2,l:'Qualche volta'},{v:3,l:'Spesso'},{v:4,l:'Sempre'}],
+items:[{n:1,t:'Quando ho un problema chiedo aiuto ad altri',a:'Ricerca di aiuto'},{n:2,t:'Raccolgo tutte le informazioni possibili prima di prendere una decisione',a:'Progettualità'},{n:3,t:'Quando ho un problema cerco di prendere in considerazione tutti i diversi modi per affrontarlo',a:'Progettualità'},{n:4,t:'Provo ad analizzare attentamente ogni problema che incontro',a:'Progettualità'},{n:5,t:'Prima di fare qualcosa di importante ascolto il parere degli altri',a:'Ricerca di aiuto'},{n:6,t:'Prima di prendere una decisione provo ad immaginare i lati positivi e negativi',a:'Progettualità'},{n:7,t:'Se sono preoccupato/a cerco qualcuno con cui parlare',a:'Ricerca di aiuto'},{n:8,t:'Quando ho un problema provo a immaginare i passaggi necessari a risolverlo',a:'Progettualità'},{n:9,t:'Se ho dei dubbi rispetto a qualche cosa chiedo il parere ad altre persone',a:'Ricerca di aiuto'},{n:10,t:'Quando ho molte decisioni da prendere, prima di tutto decido qual è la più importante',a:'Progettualità'},{n:11,t:'Quando sono contrariato/a faccio in modo che gli altri sappiano come mi sento',a:'Ricerca di aiuto'},{n:12,t:'Evito di stare da solo/a quando ho dei problemi',a:'Ricerca di aiuto'}],
+areas:{'Ricerca di aiuto':{d:'Tendenza a coinvolgere altre persone rispetto a situazioni problematiche',i:[1,5,7,9,11,12],m:24},'Progettualità':{d:'Tendenza a progettare e pianificare strategie di risposta di fronte ad un problema',i:[2,3,4,6,8,10],m:24}}},
+
+{id:'coping',title:'Stili di Coping',subtitle:'Cosa fai quando qualcosa ti stressa?',instruction:'Leggi ogni frase e scegli quanto ti riconosci. Rispondi con sincerità: non ci sono risposte giuste o sbagliate.',icon:'⚙️',
+scale:[{v:0,l:'Mai'},{v:1,l:'Raramente'},{v:2,l:'Qualche volta'},{v:3,l:'Spesso'},{v:4,l:'Sempre'}],
+items:[{n:1,t:'Quando ho un problema cerco attivamente informazioni per capire come risolverlo',a:'Attivo'},{n:2,t:'Di fronte a difficoltà tendo a rimandare sperando che la situazione si risolva da sola',a:'Evitante',r:true},{n:3,t:'Quando sono stressato/a cerco attività che mi aiutano a rilassarmi (sport, hobby, natura)',a:'Emotivo'},{n:4,t:'Quando incontro ostacoli cambio strategia e provo strade alternative',a:'Attivo'},{n:5,t:'Evito situazioni dove potrei fallire o essere giudicato negativamente',a:'Evitante',r:true},{n:6,t:'Provo a vedere le situazioni difficili da una prospettiva diversa o più positiva',a:'Emotivo'},{n:7,t:'Di fronte a un problema mi attivo subito per affrontarlo invece di aspettare',a:'Attivo'},{n:8,t:'Quando sono in difficoltà preferisco isolarmi e non chiedere aiuto a nessuno',a:'Evitante',r:true},{n:9,t:'Riesco a esprimere le mie emozioni in modo costruttivo quando sono provato/a',a:'Emotivo'},{n:10,t:'Analizzo con attenzione le cause del problema prima di agire',a:'Attivo'},{n:11,t:'Rinuncio facilmente quando le cose si complicano più del previsto',a:'Evitante',r:true},{n:12,t:'Quando attraverso periodi difficili mi concedo pause per ricaricare le energie',a:'Emotivo'}],
+areas:{'Attivo':{d:'Tendenza ad affrontare direttamente i problemi cercando soluzioni concrete.',i:[1,4,7,10],m:16},'Evitante':{d:'Tendenza a sottrarsi o rimandare di fronte alle difficoltà.',i:[2,5,8,11],m:16,neg:true},'Emotivo':{d:"Tendenza a gestire le reazioni emotive cercando modi per rilassarsi e mantenere l'equilibrio.",i:[3,6,9,12],m:16}}},
+
+{id:'locus',title:'Locus of Control',subtitle:'Da cosa dipendono le cose che ti succedono?',instruction:'Leggi ogni frase e scegli quanto sei d\'accordo. Pensa a come vedi tu le cose, anche se i tuoi amici la pensano diversamente.',icon:'🧭',
+scale:[{v:0,l:'Assolutamente falso'},{v:1,l:'Falso'},{v:2,l:'Né vero né falso'},{v:3,l:'Vero'},{v:4,l:'Assolutamente vero'}],
+items:[{n:1,t:'Ciò che accade alle persone dipende dalla loro determinazione e dalla loro volontà',a:'Interno'},{n:2,t:"Considerando le attuali circostanze, trovare un lavoro soddisfacente è più una questione legata al caso che all'impegno personale",a:'Esterno'},{n:3,t:'Se ci fossero maggiori interventi legislativi di sostegno, le persone avrebbero meno problemi nella questione lavoro',a:'Esterno'},{n:4,t:'Ciò che accade alle persone dipende dalla loro fortuna',a:'Esterno'},{n:5,t:'Per avere successo occorre valorizzare le proprie competenze e le proprie esperienze',a:'Interno'},{n:6,t:'Mi capita di comportarmi in modo diverso dal solito quando le circostanze cambiano, senza sentirmi destabilizzato/a',a:'Interno'},{n:7,t:'Chi pianifica il proprio futuro professionale ha più opportunità di chi si affida alle circostanze',a:'Interno'},{n:8,t:'Ottenere un lavoro soddisfacente dipende dalle conoscenze e dagli aiuti che le persone possono avere',a:'Esterno'},{n:9,t:"Trovare un lavoro soddisfacente dipende dallo sforzo che le persone compiono nell'attività di ricerca",a:'Interno'},{n:10,t:'Per trovare un buon lavoro bisognerebbe avere la fortuna di essere nel posto giusto al momento giusto',a:'Esterno'},{n:11,t:'I cambiamenti improvvisi mi spiazzano e faccio fatica a trovare una nuova direzione',a:'Interno',r:true}],
+areas:{'Interno':{d:'Convinzione di avere il controllo della propria vita e dei propri risultati.',i:[1,5,6,7,9,11],m:24},'Esterno':{d:'Tendenza ad attribuire successi e fallimenti a cause esterne.',i:[2,3,4,8,10],m:20}}},
+
+{id:'barriere',title:'Storia Scolastica',subtitle:'Come sta andando la scuola per te?',instruction:'Leggi ogni frase e pensa alla tua scuola, adesso o negli anni passati. Rispondi con sincerità: qui nessuno ti giudica.',icon:'🧱',
+scale:[{v:0,l:'Mai'},{v:1,l:'Raramente'},{v:2,l:'Qualche volta'},{v:3,l:'Spesso'},{v:4,l:'Sempre'}],
+items:[{n:1,t:'Durante le lezioni mi distraggo facilmente anche se vorrei stare attento/a',a:'Apprendimento'},{n:2,t:'A scuola mi sento spesso annoiato/a o poco interessato/a',a:'Coinvolgimento'},{n:3,t:'Ho avuto scontri o incomprensioni importanti con alcuni professori',a:'Relazioni'},{n:4,t:'Ho vissuto bocciature o insuccessi che hanno minato la mia fiducia',a:'Vissuti'},{n:5,t:"Quando leggo un testo lungo faccio fatica a ricordare cosa ho letto all'inizio",a:'Apprendimento'},{n:6,t:'Penso che la scuola non mi insegni cose utili per la mia vita',a:'Coinvolgimento'},{n:7,t:'Mi è capitato di sentirmi giudicato/a negativamente dai docenti',a:'Relazioni'},{n:8,t:'Ci sono stati momenti in cui ho pensato seriamente di lasciare la scuola',a:'Vissuti'},{n:9,t:'Ho bisogno di più tempo degli altri per capire le spiegazioni',a:'Apprendimento'},{n:10,t:'Seguo le lezioni solo perché devo, non perché mi interessi quello che viene insegnato',a:'Coinvolgimento'},{n:11,t:'Alcuni compagni mi hanno escluso o preso in giro',a:'Relazioni'},{n:12,t:'Le esperienze negative a scuola mi hanno fatto sentire "non portato/a" per lo studio',a:'Vissuti'},{n:13,t:'Confondo facilmente lettere, numeri o parole simili quando leggo o scrivo',a:'Apprendimento'},{n:14,t:'Mi sento più intelligente fuori da scuola che dentro',a:'Coinvolgimento'},{n:15,t:'Mi sento a disagio quando devo parlare o fare domande in classe',a:'Relazioni'},{n:16,t:'Ho cambiato scuola sperando di trovare un ambiente migliore',a:'Vissuti'},{n:17,t:'Dimentico velocemente cose che ho studiato anche se le avevo capite',a:'Apprendimento'},{n:18,t:"Ho l'impressione che i professori non capiscano il mio modo di imparare",a:'Coinvolgimento'},{n:19,t:'Preferisco stare da solo/a piuttosto che con i miei compagni di classe',a:'Relazioni'},{n:20,t:'Quando penso alla scuola provo più ansia o frustrazione che curiosità',a:'Vissuti'},{n:21,t:'A scuola mi capita di fare domande o approfondire argomenti perché sono genuinamente curioso/a',a:'Coinvolgimento',r:true}],
+areas:{'Apprendimento':{d:'Difficoltà nei processi di apprendimento, attenzione e memoria.',i:[1,5,9,13,17],m:20},'Coinvolgimento':{d:'Difficoltà legate a motivazione, interesse e senso di utilità.',i:[2,6,10,14,18,21],m:24},'Relazioni':{d:'Difficoltà nelle relazioni con docenti e compagni.',i:[3,7,11,15,19],m:20},'Vissuti':{d:'Esperienze scolastiche negative e loro impatto emotivo.',i:[4,8,12,16,20],m:20}},allNeg:true},
+
+{id:'softskills',title:'Soft Skills',subtitle:'In quali cose sei forte?',instruction:'Leggi ogni frase. Pensa a come ti comporti di solito, non a come dovresti. Scegli quanto ti descrive.',icon:'💡',
+scale:[{v:0,l:'Mai / Molto difficile'},{v:1,l:'Raramente / Con difficoltà'},{v:2,l:'Qualche volta / Nella media'},{v:3,l:'Spesso / Mi riesce bene'},{v:4,l:'Sempre / Punto di forza'}],
+items:[{n:1,t:'Quando studio una materia nuova, costruisco connessioni con cose che già conosco per capirla meglio',a:'Problem Solving'},{n:2,t:'Riesco a spiegare un concetto ai compagni in modo che capiscano',a:'Comunicazione'},{n:3,t:'Lavoro bene in gruppo anche con compagni che non conosco bene',a:'Collaborazione'},{n:4,t:'Studio anche quando nessuno mi controlla',a:'Autonomia'},{n:5,t:'Organizzo il mio tempo stabilendo cosa fare prima',a:'Organizzazione'},{n:6,t:'Rimango calmo anche durante verifiche difficili',a:'Gestione Stress'},{n:7,t:'Mi adatto quando un professore cambia metodo o programma',a:'Flessibilità'},{n:8,t:'Continuo a studiare anche quando la materia mi annoia',a:'Perseveranza'},{n:9,t:'Dopo una verifica, riesco a individuare esattamente quali argomenti non avevo capito a sufficienza',a:'Problem Solving'},{n:10,t:'Ascolto gli altri senza interrompere durante le discussioni',a:'Comunicazione'},{n:11,t:'Aiuto i compagni quando sono in difficoltà',a:'Collaborazione'},{n:12,t:'Prendo iniziativa quando vedo che qualcosa non va',a:'Autonomia'},{n:13,t:'Rispetto le scadenze per compiti e verifiche',a:'Organizzazione'},{n:14,t:'Quando mi accorgo di essere sotto pressione, metto in atto qualcosa di concreto per ridurla',a:'Gestione Stress'},{n:15,t:'Cambio strategia di studio se quella che uso non funziona',a:'Flessibilità'},{n:16,t:'Non mollo anche se i risultati tardano ad arrivare',a:'Perseveranza'},{n:17,t:'Quando un compito mi sembra impossibile, lo riorganizzo in parti più piccole per renderlo affrontabile',a:'Problem Solving'},{n:18,t:'Esprimo le mie opinioni anche quando sono diverse da quelle degli altri',a:'Comunicazione'},{n:19,t:'Accetto il contributo degli altri anche se diverso dal mio',a:'Collaborazione'},{n:20,t:'Porto a termine i compiti senza bisogno che me li ricordino',a:'Autonomia'},{n:21,t:'Tengo in ordine materiali e appunti',a:'Organizzazione'},{n:22,t:'Recupero energie dopo periodi di studio intenso',a:'Gestione Stress'},{n:23,t:'Riesco a studiare anche in situazioni diverse dal solito',a:'Flessibilità'},{n:24,t:'Dopo un brutto voto riesco a ripartire senza demoralizzarmi',a:'Perseveranza'},{n:25,t:'Prima di iniziare un compito lungo, identifico le parti principali e stimo il tempo per ciascuna',a:'Problem Solving'},{n:26,t:'Chiedo chiarimenti quando non capisco qualcosa',a:'Comunicazione'},{n:27,t:"Quando c'è conflitto nel gruppo, cerco soluzioni che vadano bene a tutti",a:'Collaborazione'},{n:28,t:'Quando ottengo un brutto risultato, la prima cosa che faccio è capire cosa posso cambiare nel mio approccio',a:'Autonomia'},{n:29,t:"Pianifico lo studio invece di ridurmi all'ultimo",a:'Organizzazione'},{n:30,t:'Riesco a separare problemi scolastici da vita personale',a:'Gestione Stress'},{n:31,t:'Accetto critiche e le uso per migliorare',a:'Flessibilità'},{n:32,t:"Mantengo l'impegno anche quando l'entusiasmo cala",a:'Perseveranza'},{n:33,t:'Dopo un insuccesso scolastico, cambio qualcosa nel mio metodo prima della verifica successiva',a:'Problem Solving'},{n:34,t:'Riesco a farmi capire anche quando devo spiegare cose complicate',a:'Comunicazione'},{n:35,t:"Riconosco quando qualcun altro ha un'idea migliore della mia",a:'Collaborazione'},{n:36,t:'Riesco a lavorare da solo senza distrarmi',a:'Autonomia'},{n:37,t:'Riesco a gestire più materie contemporaneamente',a:'Organizzazione'},{n:38,t:'Mantengo concentrazione anche quando sono sotto pressione',a:'Gestione Stress'},{n:39,t:'Funziono bene anche con professori molto diversi tra loro',a:'Flessibilità'},{n:40,t:'Trovo motivazione in me stesso, non solo nei voti',a:'Perseveranza'},{n:41,t:'Spesso mi ritrovo esaurito/a senza essermi accorto/a per tempo che stavo accumulando troppo',a:'Gestione Stress',r:true}],
+areas:{'Problem Solving':{d:'Come risolvi problemi a scuola',i:[1,9,17,25,33],m:20},'Comunicazione':{d:'Come ti esprimi con prof/compagni',i:[2,10,18,26,34],m:20},'Collaborazione':{d:'Come lavori in gruppo',i:[3,11,19,27,35],m:20},'Autonomia':{d:'Quanto studi da solo/prendi iniziativa',i:[4,12,20,28,36],m:20},'Organizzazione':{d:'Come gestisci tempo/materiali',i:[5,13,21,29,37],m:20},'Gestione Stress':{d:'Come reagisci a verifiche/pressione',i:[6,14,22,30,38,41],m:24},'Flessibilità':{d:'Come ti adatti a cambiamenti',i:[7,15,23,31,39],m:20},'Perseveranza':{d:'Quanto tieni duro quando è difficile',i:[8,16,24,32,40],m:20}}},
+
+{id:'cognitivi',title:'Orientamenti Cognitivi',subtitle:'Cosa ti viene naturale fare?',instruction:'Leggi ogni frase e scegli quanto ti somiglia. Pensa a cosa fai spontaneamente, anche fuori da scuola.',icon:'🧠',
+scale:[{v:0,l:'Per niente simile a me'},{v:1,l:'Un po\' simile'},{v:2,l:'Piuttosto simile'},{v:3,l:'Molto simile'},{v:4,l:'Completamente simile'}],
+items:[
+{n:1,t:'Disegni, schizzi o crei immagini nel tempo libero.',a:'Visuo Spaziale'},{n:2,t:'Leggi libri, articoli o saggi nel tempo libero.',a:'Linguistica'},{n:3,t:'Ti capita di accorgerti di come si sente qualcuno prima che te lo dica.',a:'Inter-personale'},{n:4,t:'Ascolti musica con attenzione, non solo come sottofondo.',a:'Musicale'},{n:5,t:'Ti senti portato/a per attività che richiedono coordinazione fisica, precisione nei movimenti o abilità manuale.',a:'Motorio Cinestetica'},{n:6,t:'Ti fermi a riflettere su come ti senti e perché.',a:'Intra-personale'},{n:7,t:'Fai calcoli mentali o risolvi problemi numerici anche fuori dalla scuola.',a:'Logico Matematica'},{n:8,t:'Cerchi occasioni per stare a contatto con la natura o con gli animali.',a:'Naturalista'},{n:9,t:'Ti capita di fermarti a chiederti il senso di quello che fai o di come vuoi vivere.',a:'Filosofico Esistenziale'},
+{n:10,t:'Riesci a immaginare mentalmente come apparirebbe un oggetto visto da un altro angolo.',a:'Visuo Spaziale'},{n:11,t:'Ti capita di spiegare concetti complicati agli altri trovando le parole giuste.',a:'Linguistica'},{n:12,t:'Quando qualcuno ti racconta un problema, riesci a metterti davvero nei suoi panni.',a:'Inter-personale'},{n:13,t:'Suoni uno strumento musicale o lo hai fatto in passato con piacere.',a:'Musicale'},{n:14,t:'Impari facilmente movimenti nuovi (sport, ballo, gesti tecnici).',a:'Motorio Cinestetica'},{n:15,t:'Ti dai degli obiettivi personali e lavori concretamente per raggiungerli.',a:'Intra-personale'},{n:16,t:'Ti capita di approfondire argomenti di matematica o logica anche al di là di quello che chiede la scuola.',a:'Logico Matematica'},{n:17,t:'Ti piace leggere, guardare o ascoltare contenuti su biologia, ecologia o scienze naturali.',a:'Naturalista'},{n:18,t:"Parli o pensi spesso a domande grandi: il senso della vita, la giustizia, l'esistenza.",a:'Filosofico Esistenziale'},
+{n:19,t:'Quando devi organizzare qualcosa, tendi a farlo visivamente (schemi, disegni, mappe).',a:'Visuo Spaziale'},{n:20,t:'Scrivi storie, diari, poesie o testi nel tempo libero.',a:'Linguistica'},{n:21,t:"Quando c'è tensione in un gruppo, cerchi di trovare una soluzione che vada bene a tutti.",a:'Inter-personale'},{n:22,t:'Componi musica, crei beat o inventi melodie anche solo per te.',a:'Musicale'},{n:23,t:'Riesci a fare lavori di precisione con le mani (montare, disegnare, usare attrezzi).',a:'Motorio Cinestetica'},{n:24,t:'Sai riconoscere con chiarezza in cosa sei bravo e dove invece fatichi.',a:'Intra-personale'},{n:25,t:'Fai rompicapo, puzzle, giochi di logica o problemi simili per piacere.',a:'Logico Matematica'},{n:26,t:"Quando sei all'aperto, noti dettagli della natura (piante, animali, paesaggi) che altri ignorano.",a:'Naturalista'},{n:27,t:'Hai posizioni chiare su questioni etiche o morali e le argomenti con gli altri.',a:'Filosofico Esistenziale'},
+{n:28,t:'Ricordi facilmente come appare un posto, un volto o un oggetto che hai visto.',a:'Visuo Spaziale'},{n:29,t:'Prendi la parola in discussioni, dibattiti o presentazioni senza evitarle.',a:'Linguistica'},{n:30,t:'Riesci a lavorare bene anche con persone molto diverse da te.',a:'Inter-personale'},{n:31,t:'Ti accorgi subito quando una canzone cambia ritmo o tono, anche senza saperlo spiegare.',a:'Musicale'},{n:32,t:'Riesci a creare o riparare oggetti con le mani con precisione e soddisfazione.',a:'Motorio Cinestetica'},{n:33,t:'Riesci a calmarti e a riprendere il controllo quando sei molto agitato o stressato.',a:'Intra-personale'},{n:34,t:'Affronti problemi complessi cercando di capirne la struttura profonda, non solo la soluzione immediata.',a:'Logico Matematica'},{n:35,t:'Ti interessi del comportamento degli animali e di come funzionano gli ecosistemi.',a:'Naturalista'},{n:36,t:'Cerchi conversazioni su temi profondi: il senso della vita, i valori, il futuro.',a:'Filosofico Esistenziale'}],
+areas:{'Visuo Spaziale':{d:'Capacità di percepire e ricreare immagini mentali.',i:[1,10,19,28],m:16},'Linguistica':{d:'Capacità di usare il linguaggio efficacemente.',i:[2,11,20,29],m:16},'Inter-personale':{d:'Capacità di comprendere gli altri e interagire.',i:[3,12,21,30],m:16},'Musicale':{d:'Sensibilità per ritmo, tono e melodia.',i:[4,13,22,31],m:16},'Motorio Cinestetica':{d:'Capacità di usare il corpo in modo abile.',i:[5,14,23,32],m:16},'Intra-personale':{d:'Capacità di comprendere se stessi.',i:[6,15,24,33],m:16},'Logico Matematica':{d:'Ragionamento logico e problem solving.',i:[7,16,25,34],m:16},'Naturalista':{d:'Sensibilità verso il mondo naturale.',i:[8,17,26,35],m:16},'Filosofico Esistenziale':{d:'Riflessione su questioni profonde.',i:[9,18,27,36],m:16}}},
+
+{id:'apprendimento',title:'Stili di Apprendimento',subtitle:'Come impari meglio?',instruction:'Ognuno impara in un modo diverso: non esiste quello giusto. Leggi ogni frase e scegli quanto è vera per te.',icon:'🧠',
+scale:[{v:0,l:'Mai'},{v:1,l:'Raramente'},{v:2,l:'Qualche volta'},{v:3,l:'Spesso'},{v:4,l:'Sempre'}],
+items:[{n:1,t:'Preferisco provare subito un esercizio piuttosto che ascoltare prima tutta la spiegazione',a:'Attivo'},{n:2,t:'Prima di rispondere a una domanda, ho bisogno di tempo per pensare',a:'Riflessivo'},{n:3,t:'Capisco meglio quando mi spiegano prima la teoria generale e poi gli esempi',a:'Teorico'},{n:4,t:'Voglio capire subito come posso usare quello che studio nella vita reale',a:'Pragmatico'},{n:5,t:'Imparo meglio quando posso sperimentare in prima persona, anche sbagliando',a:'Attivo'},{n:6,t:'Preferisco osservare come gli altri fanno qualcosa prima di provare io',a:'Riflessivo'},{n:7,t:'Mi piace collegare le informazioni in schemi logici e strutturati',a:'Teorico'},{n:8,t:'Preferisco esercizi concreti ai concetti astratti',a:'Pragmatico'},{n:9,t:'Mi annoio se devo stare fermo ad ascoltare per molto tempo senza fare niente',a:'Attivo'},{n:10,t:'Imparo meglio quando posso riflettere con calma su ciò che ho appreso',a:'Riflessivo'},{n:11,t:'Preferisco capire il perché profondo delle cose prima di passare alla pratica',a:'Teorico'},{n:12,t:'Imparo meglio quando vedo l\'applicazione pratica immediata di un concetto',a:'Pragmatico'},{n:13,t:'Preferisco laboratori e attività pratiche alle lezioni frontali',a:'Attivo'},{n:14,t:'Mi piace prendere appunti dettagliati e rileggermeli più volte',a:'Riflessivo'},{n:15,t:'Imparo meglio quando le informazioni sono organizzate in modelli o framework chiari',a:'Teorico'},{n:16,t:'Mi interessano le tecniche e i metodi che funzionano davvero, non solo le teorie',a:'Pragmatico'},{n:17,t:'Quando studio qualcosa di nuovo, ho bisogno di provarlo subito per capirlo davvero',a:'Attivo'},{n:18,t:'Preferisco analizzare un problema da più punti di vista prima di agire',a:'Riflessivo'},{n:19,t:'Mi piace trovare i principi generali che spiegano casi particolari',a:'Teorico'},{n:20,t:'Quando studio, mi chiedo sempre: A cosa mi serve questo nella pratica?',a:'Pragmatico'}],
+areas:{'Attivo':{d:'Impara facendo esperienza diretta e sperimentazione pratica.',i:[1,5,9,13,17],m:20},'Riflessivo':{d:'Impara osservando, analizzando e riflettendo prima di agire.',i:[2,6,10,14,18],m:20},'Teorico':{d:'Impara da concetti astratti, modelli logici e teorie strutturate.',i:[3,7,11,15,19],m:20},'Pragmatico':{d:'Impara applicando, sperimentando e verificando l\'utilità pratica.',i:[4,8,12,16,20],m:20}}},
+
+{id:'passioni',title:'Passioni e Interessi',subtitle:'Cosa ti piace fare nel tempo libero?',instruction:'Queste sono cose che si possono fare fuori da scuola. Scegli quanto ti piacciono. Non importa se sei bravo o no: importa solo se ti piacciono.',icon:'🔥',
+scale:[{v:0,l:'Mai / Non mi interessa'},{v:1,l:'Poco'},{v:2,l:'Abbastanza'},{v:3,l:'Molto'},{v:4,l:'Sempre / Mi appassiona'}],
+items:[{n:1,t:'Giocare a videogiochi (strategia, azione, simulazione, ruolo)',a:'Digitale & Gaming'},{n:2,t:'Praticare sport di squadra (calcio, basket, pallavolo)',a:'Sport & Movimento'},{n:3,t:'Suonare uno strumento musicale',a:'Musica'},{n:4,t:'Disegnare o dipingere (su carta, digitale, graffiti)',a:'Arte & Immagini'},{n:5,t:'Leggere libri (romanzi, saggi, biografie)',a:'Lettura & Scrittura'},{n:6,t:'Fare volontariato o aiutare persone in difficoltà',a:'Sociale & Aiuto'},{n:7,t:"Stare all'aperto (escursioni, trekking, campeggio)",a:'Natura & Animali'},{n:8,t:'Costruire oggetti (bricolage, modellismo, fai-da-te)',a:'Manuale & Costruzione'},{n:9,t:'Cucinare o sperimentare nuove ricette',a:'Cucina & Food'},{n:10,t:'Recitare o fare teatro',a:'Performance & Spettacolo'},{n:11,t:'Guardare streaming o video di gaming su YouTube/Twitch',a:'Digitale & Gaming'},{n:12,t:'Praticare sport individuali (corsa, nuoto, arti marziali, skate)',a:'Sport & Movimento'},{n:13,t:'Cantare (da solo, in gruppo, karaoke, coro)',a:'Musica'},{n:14,t:'Fare fotografia o video creativi',a:'Comunicazione Visiva & Media'},{n:15,t:'Leggere fumetti, manga o graphic novel',a:'Lettura & Scrittura'},{n:16,t:'Occuparmi di bambini (babysitting, animazione, giochi)',a:'Sociale & Aiuto'},{n:17,t:'Occuparmi di animali domestici (cura, gioco, addestramento)',a:'Natura & Animali'},{n:18,t:'Smontare e riparare apparecchi (elettronica, meccanica)',a:'Manuale & Costruzione'},{n:19,t:'Seguire programmi, video o chef su cucina/food',a:'Cucina & Food'},{n:20,t:'Ballare (qualsiasi stile: hip hop, danza, ballo)',a:'Performance & Spettacolo'},{n:21,t:'Creare contenuti digitali (video, meme, post, editing)',a:'Comunicazione Visiva & Media'},{n:22,t:'Allenarmi in palestra o fare attività fisica regolare',a:'Sport & Movimento'},{n:23,t:'Ascoltare musica per ore (qualsiasi genere)',a:'Musica'},{n:24,t:'Creare grafica, loghi o design visivi',a:'Comunicazione Visiva & Media'},{n:25,t:'Scrivere storie, racconti o fanfiction',a:'Lettura & Scrittura'},{n:26,t:'Organizzare eventi, feste o attività con amici',a:'Sociale & Aiuto'},{n:27,t:'Fare volontariato con animali (canile, gattile, rifugi)',a:'Natura & Animali'},{n:28,t:'Lavorare con attrezzi e macchinari',a:'Manuale & Costruzione'},{n:29,t:'Curarmi nell\'aspetto: abbigliamento, trucco, acconciatura',a:'Estetica, Moda & Stile'},{n:30,t:'Esibirmi davanti a persone (parlare, presentare, intrattenere)',a:'Performance & Spettacolo'},{n:31,t:'Modificare giochi o usare mod/editor/personalizzazioni',a:'Digitale & Gaming'},{n:32,t:'Seguire eventi sportivi dal vivo o in TV',a:'Sport & Movimento'},{n:33,t:'Creare musica (comporre, produrre beat, mixare, rappare)',a:'Musica'},{n:34,t:'Seguire artisti, illustratori o designer (Instagram, ArtStation)',a:'Comunicazione Visiva & Media'},{n:35,t:'Scrivere poesie, testi canzoni o diari personali',a:'Lettura & Scrittura'},{n:36,t:'Stare in gruppo e socializzare con persone nuove',a:'Sociale & Aiuto'},{n:37,t:'Coltivare piante, fare giardinaggio o orto',a:'Natura & Animali'},{n:38,t:'Modificare o personalizzare oggetti (customizzazione)',a:'Manuale & Costruzione'},{n:39,t:'Interessarmi di moda, abbigliamento o styling',a:'Estetica, Moda & Stile'},{n:40,t:'Fare video o contenuti dove appaio io (TikTok, Reels, YouTube)',a:'Comunicazione Visiva & Media'},{n:41,t:'Partecipare a community online (Discord, forum, clan, gruppi)',a:'Digitale & Gaming'},{n:42,t:'Supportare un amico durante l\'allenamento o aiutarlo a migliorare in uno sport che praticate insieme',a:'Sport & Movimento'},{n:43,t:'Andare a concerti o eventi musicali',a:'Musica'},{n:44,t:"Visitare mostre, musei o gallerie d'arte",a:'Arte & Immagini'},{n:45,t:'Leggere o scrivere su blog, forum o social',a:'Lettura & Scrittura'},{n:46,t:'Mediare litigi o aiutare amici con problemi',a:'Sociale & Aiuto'},{n:47,t:'Seguire documentari o contenuti su natura e animali',a:'Natura & Animali'},{n:48,t:'Fare lavori manuali di precisione (falegnameria, saldatura)',a:'Manuale & Costruzione'},{n:49,t:'Curare l\'ambiente in cui vivo: ordine, scelta degli arredi, decorazione degli spazi',a:'Estetica, Moda & Stile'},{n:50,t:'Partecipare a contest, gare o competizioni pubbliche',a:'Performance & Spettacolo'},{n:51,t:'Realizzare opere manuali creative: scultura, ceramica, fumetti, illustrazione',a:'Arte & Immagini'},{n:52,t:'Sperimentare tecniche artistiche nuove: acquerello, pastelli, arte digitale',a:'Arte & Immagini'},{n:53,t:'Seguire creator, designer o fotografi professionisti sui social per ispirarmi',a:'Arte & Immagini'},{n:54,t:'Sperimentare abbinamenti di sapori, tecniche di cottura o ricette di altri paesi',a:'Cucina & Food'},{n:55,t:'Sperimentare nuovi look, combinare capi o creare outfit originali',a:'Estetica, Moda & Stile'},{n:56,t:'Seguire tendenze di moda, beauty o lifestyle su social e riviste',a:'Estetica, Moda & Stile'},{n:57,t:'Assistere a spettacoli dal vivo: teatro, circo, danza, stand-up',a:'Performance & Spettacolo'},{n:58,t:'Cucinare qualcosa di buono per amici o familiari',a:'Cucina & Food'},{n:59,t:'Andare a sagre, fiere gastronomiche o mercati di prodotti locali',a:'Cucina & Food'},{n:60,t:'Esplorare nuovi videogiochi o generi che non conosco ancora',a:'Digitale & Gaming'}],
+areas:{'Digitale & Gaming':{d:'Videogiochi, community online e gaming.',i:[1,11,31,41,60],m:20},'Sport & Movimento':{d:'Attività fisiche, sport e allenamento.',i:[2,12,22,32,42],m:20},'Musica':{d:'Ascolto, pratica e creazione musicale.',i:[3,13,23,33,43],m:20},'Arte & Immagini':{d:'Arti visive tradizionali e storia dell\'arte.',i:[4,44,51,52,53],m:20},'Comunicazione Visiva & Media':{d:'Fotografia, video, grafica digitale e contenuti multimediali.',i:[14,21,24,34,40],m:20},'Lettura & Scrittura':{d:'Lettura, scrittura e espressione verbale.',i:[5,15,25,35,45],m:20},'Sociale & Aiuto':{d:'Volontariato, socializzazione e aiuto.',i:[6,16,26,36,46],m:20},'Natura & Animali':{d:'Natura, animali e attività all\'aperto.',i:[7,17,27,37,47],m:20},'Manuale & Costruzione':{d:'Costruire, riparare e lavorare con le mani.',i:[8,18,28,38,48],m:20},'Cucina & Food':{d:'Cucina, ricette e cultura del cibo.',i:[9,19,54,58,59],m:20},'Estetica, Moda & Stile':{d:'Cura personale, moda, acconciatura e stile.',i:[29,39,49,55,56],m:20},'Performance & Spettacolo':{d:'Esibirsi, intrattenere e partecipare a eventi.',i:[10,20,30,50,57],m:20}}},
+
+
+{id:'contesto',title:'Io e il Mio Mondo',subtitle:'La tua vita fuori da scuola',instruction:'Leggi ogni frase e scegli quanto è vera per te. Rispondi d\'istinto: qui nessuno ti giudica.',icon:'🌍',
+scale:[{v:0,l:'Mai'},{v:1,l:'Raramente'},{v:2,l:'Qualche volta'},{v:3,l:'Spesso'},{v:4,l:'Sempre'}],
+items:[{n:1,t:'A casa si parla di quale scuola superiore potrei fare',a:'Pressione Familiare'},{n:2,t:'Prima di rispondere ho letto tutta la domanda fino in fondo',a:'Attenzione Compilazione',r:true},{n:3,t:'A casa parlo una lingua diversa dall\'italiano',a:'Contesto Linguistico'},{n:4,t:'A casa c\'è un adulto che mi aiuta con i compiti o con le decisioni sulla scuola',a:'Supporto Familiare',r:true},{n:5,t:'Quando parlo della scuola che mi piacerebbe, sento che la mia opinione conta poco',a:'Pressione Familiare'},{n:6,t:'Ad alcune domande ho messo un numero a caso senza leggere bene',a:'Attenzione Compilazione'},{n:7,t:'Quando leggo testi lunghi in italiano faccio più fatica che nella mia lingua di casa',a:'Contesto Linguistico'},{n:8,t:'Mi capita di dovermi occupare di fratelli, sorelle o della casa invece di studiare',a:'Supporto Familiare'},{n:9,t:'Mi sento libero/a di scegliere la scuola che preferisco',a:'Pressione Familiare',r:true},{n:10,t:'Ho pensato alla mia esperienza concreta prima di scegliere il punteggio',a:'Attenzione Compilazione',r:true},{n:11,t:'Mi capita di non capire alcune parole usate dai professori a scuola',a:'Contesto Linguistico'},{n:12,t:'Quando ho un problema importante so a chi chiedere aiuto in famiglia',a:'Supporto Familiare',r:true},{n:13,t:'Qualcuno in famiglia si è arrabbiato o deluso quando ho detto cosa mi piacerebbe fare',a:'Pressione Familiare'},{n:14,t:'A volte ho cliccato veloce per finire prima senza guardare la domanda',a:'Attenzione Compilazione'},{n:15,t:'Sento che la mia scelta scolastica dipende più dai miei genitori che da me',a:'Pressione Familiare'},{n:16,t:'Alcune domande mi hanno fatto fermare a pensare perché non sapevo subito cosa rispondere',a:'Attenzione Compilazione',r:true}],
+areas:{'Pressione Familiare':{d:'Grado di pressione familiare percepita sulla scelta scolastica.',i:[1,5,9,13,15],m:20},'Attenzione Compilazione':{d:'Livello di attenzione e comprensione durante la compilazione del questionario.',i:[2,6,10,14,16],m:20},'Contesto Linguistico':{d:'Presenza di barriere linguistiche legate alla lingua parlata in famiglia.',i:[3,7,11],m:12},'Supporto Familiare':{d:'Disponibilità di supporto adulto in ambito scolastico e decisionale.',i:[4,8,12],m:12}}},
+
+
+{id:'interessi',title:'Interessi Professionali — Indirizzi Scolastici',subtitle:'Quali scuole ti attirano di più?',instruction:'Queste sono cose che si fanno in diverse scuole superiori. Leggi ogni frase e scegli quanto ti piacerebbe farle. Pensa ai prossimi 3-5 anni.',icon:'🎓',
+scale:[{v:0,l:'Per nulla'},{v:1,l:'Poco'},{v:2,l:'Mediamente'},{v:3,l:'Molto'},{v:4,l:'Moltissimo'}],
+items:[
+{n:1,t:'Studiare matematica e fisica a livelli molto avanzati',a:'Scientifico-Matematico'},
+{n:2,t:'Fare esperimenti in laboratorio con sostanze chimiche o campioni biologici',a:'Chimico-Biologico'},
+{n:3,t:'Programmare applicazioni, siti web o software',a:'Informatico-Digitale'},
+{n:4,t:'Creare contenuti grafici, loghi o identità visive per comunicare un messaggio',a:'Comunicazione Visiva e Media'},
+{n:5,t:'Smontare, riparare e rimettere in funzione motori, macchinari o veicoli',a:'Tecnico-Industriale'},
+{n:6,t:'Progettare edifici, strutture o spazi urbani usando disegno tecnico e strumenti CAD',a:'Costruzioni e Territorio'},
+{n:7,t:'Coltivare piante, gestire orti, serre o terreni agricoli',a:'Agrario e Naturale'},
+{n:8,t:'Cucinare e preparare piatti in cucine professionali',a:'Enogastronomia e Ospitalità'},
+{n:9,t:'Gestire la contabilità, i bilanci e i documenti economici di un\'azienda',a:'Economico-Gestionale'},
+{n:10,t:'Leggere e analizzare testi letterari in latino e greco antico',a:'Umanistico-Classico'},
+{n:11,t:'Studiare due o tre lingue straniere a livello avanzato contemporaneamente',a:'Linguistico-Internazionale'},
+{n:12,t:'Capire la psicologia e il comportamento delle persone',a:'Scienze Umane e Pedagogia'},
+{n:13,t:'Capire come funziona il corpo umano, le malattie e i trattamenti medici',a:'Sanitario e Socio-Assistenziale'},
+{n:14,t:'Disegnare, dipingere o creare opere visive con materiali artistici tradizionali',a:'Artistico, Visivo e Design'},
+{n:15,t:'Suonare uno strumento musicale o studiare teoria musicale a livello avanzato',a:'Musicale, Performativo e Sport'},
+{n:16,t:'Eseguire trattamenti estetici su clienti in un centro benessere o istituto di bellezza',a:'Benessere e Cura Estetica'},
+{n:17,t:'Risolvere problemi complessi usando formule e ragionamento logico',a:'Scientifico-Matematico'},
+{n:18,t:'Studiare chimica, biologia e scienze naturali in modo approfondito',a:'Chimico-Biologico'},
+{n:19,t:'Lavorare con reti informatiche, sistemi di comunicazione o cybersecurity',a:'Informatico-Digitale'},
+{n:20,t:'Produrre e montare video, cortometraggi o contenuti multimediali',a:'Comunicazione Visiva e Media'},
+{n:21,t:'Lavorare in officina con attrezzi, macchine utensili o strumenti di precisione',a:'Tecnico-Industriale'},
+{n:22,t:'Lavorare nei cantieri edili: costruire, ristrutturare o installare impianti in edifici',a:'Costruzioni e Territorio'},
+{n:23,t:'Occuparmi della cura e allevamento di animali in contesti rurali o zootecnici',a:'Agrario e Naturale'},
+{n:24,t:'Servire ai tavoli e gestire il rapporto diretto con i clienti in sala',a:'Enogastronomia e Ospitalità'},
+{n:25,t:'Organizzare attività commerciali, campagne di marketing o strategie di vendita',a:'Economico-Gestionale'},
+{n:26,t:'Studiare storia, filosofia e la cultura delle civiltà antiche in profondità',a:'Umanistico-Classico'},
+{n:27,t:'Comunicare con persone di culture diverse in contesti internazionali o professionali',a:'Linguistico-Internazionale'},
+{n:28,t:'Studiare come funzionano le società, le famiglie e i gruppi umani attraverso la sociologia',a:'Scienze Umane e Pedagogia'},
+{n:29,t:'Assistere pazienti o persone con bisogni sanitari in ospedali, ambulatori o strutture',a:'Sanitario e Socio-Assistenziale'},
+{n:30,t:'Progettare abiti, accessori o collezioni moda con un\'identità stilistica precisa',a:'Artistico, Visivo e Design'},
+{n:31,t:'Cantare, ballare o recitare davanti a un pubblico in spettacoli dal vivo',a:'Musicale, Performativo e Sport'},
+{n:32,t:'Tagliare, colorare e acconciare capelli creando stili personalizzati per ogni cliente',a:'Benessere e Cura Estetica'},
+{n:33,t:'Prepararmi per accedere a università scientifiche come Ingegneria, Fisica o Matematica',a:'Scientifico-Matematico'},
+{n:34,t:'Lavorare in laboratori di analisi, ricerca biologica o controllo qualità',a:'Chimico-Biologico'},
+{n:35,t:'Fare laboratori pratici di elettronica, robotica o automazione industriale',a:'Informatico-Digitale'},
+{n:36,t:'Usare software di grafica, fotoritocco o progettazione digitale per creare immagini',a:'Comunicazione Visiva e Media'},
+{n:37,t:'Fare saldature, lavorazioni meccaniche o installazioni di impianti industriali',a:'Tecnico-Industriale'},
+{n:38,t:'Misurare e mappare il territorio usando strumenti topografici o tecnologie GIS',a:'Costruzioni e Territorio'},
+{n:39,t:'Studiare come si producono e trasformano alimenti a livello industriale o artigianale',a:'Agrario e Naturale'},
+{n:40,t:'Organizzare eventi, banchetti o servizi di accoglienza in strutture ricettive',a:'Enogastronomia e Ospitalità'},
+{n:41,t:'Fare pratica in uffici, banche, agenzie di viaggio o studi professionali',a:'Economico-Gestionale'},
+{n:42,t:'Capire come il pensiero greco e romano è alla base della cultura occidentale moderna',a:'Umanistico-Classico'},
+{n:43,t:'Tradurre testi o fare da mediatore linguistico tra persone che parlano lingue diverse',a:'Linguistico-Internazionale'},
+{n:44,t:'Organizzare attività educative o ricreative per bambini, ragazzi o gruppi',a:'Scienze Umane e Pedagogia'},
+{n:45,t:'Aiutare persone in difficoltà: anziani, disabili, bambini a rischio o persone con disagio',a:'Sanitario e Socio-Assistenziale'},
+{n:46,t:'Realizzare oggetti artigianali di qualità: ceramica, gioielli, cuoio, legno lavorato',a:'Artistico, Visivo e Design'},
+{n:47,t:'Comporre musica, creare coreografie o scrivere testi per la scena',a:'Musicale, Performativo e Sport'},
+{n:48,t:'Consigliare le persone su prodotti cosmetici, trattamenti e routine di cura personale',a:'Benessere e Cura Estetica'},
+{n:49,t:'Partecipare a gare di matematica, olimpiadi scientifiche o tornei di logica',a:'Scientifico-Matematico'},
+{n:50,t:'Capire come funzionano le reazioni chimiche e i processi biologici a livello molecolare',a:'Chimico-Biologico'},
+{n:51,t:'Capire come funzionano i dispositivi tecnologici dall\'hardware al software',a:'Informatico-Digitale'},
+{n:52,t:'Lavorare nella pubblicità, nell\'editoria o nella comunicazione visiva di aziende ed enti',a:'Comunicazione Visiva e Media'},
+{n:53,t:'Usare macchinari industriali, torni, fresatrici o strumenti di misura tecnica',a:'Tecnico-Industriale'},
+{n:54,t:'Occuparmi di gestione ambientale: depurazione acque, smaltimento rifiuti, risanamento',a:'Costruzioni e Territorio'},
+{n:55,t:'Lavorare all\'aperto per gestire boschi, pascoli, risorse naturali o territorio rurale',a:'Agrario e Naturale'},
+{n:56,t:'Lavorare in hotel, agriturismi o strutture turistiche accogliendo e assistendo gli ospiti',a:'Enogastronomia e Ospitalità'},
+{n:57,t:'Studiare diritto, economia aziendale e gestione delle imprese',a:'Economico-Gestionale'},
+{n:58,t:'Tradurre testi di autori classici come Cicerone, Virgilio o Omero',a:'Umanistico-Classico'},
+{n:59,t:'Imparare grammatica, letteratura e cultura di altri paesi attraverso le loro lingue',a:'Linguistico-Internazionale'},
+{n:60,t:'Studiare pedagogia e i metodi con cui le persone imparano e si sviluppano',a:'Scienze Umane e Pedagogia'},
+{n:61,t:'Fare stage o tirocini in strutture sanitarie, sociali o riabilitative',a:'Sanitario e Socio-Assistenziale'},
+{n:62,t:'Progettare oggetti, spazi o sistemi visivi seguendo criteri estetici e funzionali',a:'Artistico, Visivo e Design'},
+{n:63,t:'Allenarmi per praticare sport ad alto livello integrando preparazione fisica e studio',a:'Musicale, Performativo e Sport'},
+{n:64,t:'Lavorare a contatto diretto con le persone per farle sentire meglio nel proprio aspetto',a:'Benessere e Cura Estetica'},
+{n:65,t:'Capire come funzionano i fenomeni fisici del mondo reale, dai pianeti ai circuiti',a:'Scientifico-Matematico'},
+{n:66,t:'Studiare come si sviluppano malattie, farmaci o tecnologie basate sulla biologia',a:'Chimico-Biologico'},
+{n:67,t:'Montare, configurare o riparare computer, componenti elettronici e impianti digitali',a:'Informatico-Digitale'},
+{n:68,t:'Fotografare, filmare o documentare eventi, persone o ambienti con uno scopo comunicativo',a:'Comunicazione Visiva e Media'},
+{n:69,t:'Fare manutenzione di apparecchi, veicoli, impianti o strutture meccaniche',a:'Tecnico-Industriale'},
+{n:70,t:'Studiare le norme tecniche che regolano la costruzione e la sicurezza degli edifici',a:'Costruzioni e Territorio'},
+{n:71,t:'Studiare come proteggere gli ecosistemi naturali e gestire le risorse ambientali',a:'Agrario e Naturale'},
+{n:72,t:'Imparare le tecniche di pasticceria, panificazione o produzione di specialità alimentari',a:'Enogastronomia e Ospitalità'},
+{n:73,t:'Analizzare dati economici, finanziari o di mercato per prendere decisioni',a:'Economico-Gestionale'},
+{n:74,t:'Sviluppare un metodo analitico rigoroso attraverso lo studio di testi complessi',a:'Umanistico-Classico'},
+{n:75,t:'Lavorare in aziende internazionali, organizzazioni europee o contesti multiculturali',a:'Linguistico-Internazionale'},
+{n:76,t:'Lavorare con bambini in asili, scuole o centri educativi come educatore o insegnante',a:'Scienze Umane e Pedagogia'},
+{n:77,t:'Studiare anatomia, farmacologia o tecniche di assistenza e cura della persona',a:'Sanitario e Socio-Assistenziale'},
+{n:78,t:'Visitare mostre, studiare storia dell\'arte e analizzare i movimenti artistici',a:'Artistico, Visivo e Design'},
+{n:79,t:'Esibirmi in spettacoli musicali, teatrali o di danza davanti a platee',a:'Musicale, Performativo e Sport'},
+{n:80,t:'Imparare tecniche professionali di make-up, nail art o trattamenti viso e corpo',a:'Benessere e Cura Estetica'}],
+areas:{
+'Scientifico-Matematico':{d:'Liceo Scientifico, Liceo Scienze Applicate',i:[1,17,33,49,65],m:20},
+'Chimico-Biologico':{d:'Liceo Scienze Applicate (bio/chim), ITIS Chimica e Biotecnologie',i:[2,18,34,50,66],m:20},
+'Informatico-Digitale':{d:'ITIS Informatica, Telecomunicazioni, Elettronica ed Elettrotecnica',i:[3,19,35,51,67],m:20},
+'Comunicazione Visiva e Media':{d:'ITIS Grafica e Comunicazione, CFP Operatore Grafico',i:[4,20,36,52,68],m:20},
+'Tecnico-Industriale':{d:'ITIS Meccanica/Meccatronica, Trasporti e Logistica, IP Manutenzione — anche CFP Meccanico/Elettrico',i:[5,21,37,53,69],m:20},
+'Costruzioni e Territorio':{d:'ITIS Costruzioni, Ambiente e Territorio, IP Gestione Acque — anche CFP Operatore Edile',i:[6,22,38,54,70],m:20},
+'Agrario e Naturale':{d:'ITIS Agraria/Agroalimentare, IP Agricoltura e Sviluppo Rurale — anche CFP Operatore Agricolo',i:[7,23,39,55,71],m:20},
+'Enogastronomia e Ospitalità':{d:'IP Enogastronomia e Ospitalità Alberghiera — anche CFP Operatore della Ristorazione',i:[8,24,40,56,72],m:20},
+'Economico-Gestionale':{d:'ITIS AFM, Turismo, IP Servizi Commerciali',i:[9,25,41,57,73],m:20},
+'Umanistico-Classico':{d:'Liceo Classico',i:[10,26,42,58,74],m:20},
+'Linguistico-Internazionale':{d:'Liceo Linguistico, ITIS AFM Relazioni Internazionali',i:[11,27,43,59,75],m:20},
+'Scienze Umane e Pedagogia':{d:'Liceo Scienze Umane, opzione Economico-Sociale',i:[12,28,44,60,76],m:20},
+'Sanitario e Socio-Assistenziale':{d:'IP Servizi per la Sanità e l\'Assistenza Sociale, IP Odontotecnico/Ottico',i:[13,29,45,61,77],m:20},
+'Artistico, Visivo e Design':{d:'Liceo Artistico, ITIS Sistema Moda, IP Artigianato Made in Italy',i:[14,30,46,62,78],m:20},
+'Musicale, Performativo e Sport':{d:'Liceo Musicale/Coreutico, Liceo Sportivo, IP Servizi Culturali e dello Spettacolo',i:[15,31,47,63,79],m:20},
+'Benessere e Cura Estetica':{d:'CFP Operatore del Benessere — estetica, acconciatura, nail art',i:[16,32,48,64,80],m:20}}}
+];
+
+let S={screen:'welcome',cQ:null,ans:{},ui:{nome:'',eta:'',data:'',tel:'',email:''},snd:true};
+let aC=null;
+function iA(){if(!aC)aC=new(window.AudioContext||window.webkitAudioContext)();}
+function pT(f,d,t='sine',v=.06){if(!S.snd||!aC)return;try{const o=aC.createOscillator(),g=aC.createGain();o.type=t;o.frequency.setValueAtTime(f,aC.currentTime);g.gain.setValueAtTime(v,aC.currentTime);g.gain.exponentialRampToValueAtTime(.001,aC.currentTime+d);o.connect(g);g.connect(aC.destination);o.start();o.stop(aC.currentTime+d);}catch(e){}}
+function pSel(){pT(600,.07,'sine',.04);setTimeout(()=>pT(800,.05,'sine',.03),50);}
+function pNav(){pT(440,.1,'triangle',.04);setTimeout(()=>pT(550,.08,'triangle',.03),60);}
+function pCom(){pT(523,.1,'sine',.04);setTimeout(()=>pT(659,.1,'sine',.04),90);setTimeout(()=>pT(784,.17,'sine',.05),180);}
+function pSta(){pT(392,.08,'triangle',.03);setTimeout(()=>pT(523,.08,'triangle',.03),70);setTimeout(()=>pT(659,.12,'triangle',.04),140);}
+
+const ap=document.getElementById('app');
+function R(){switch(S.screen){case'welcome':rW();break;case'hub':rH();break;case'questionnaire':rQ();break;case'report':rR();break;}uP();uSH();if(typeof updateBadge==='function')updateBadge();}
+function uP(){const t=Q.reduce((s,q)=>s+q.items.length,0),a=Object.keys(S.ans).length;const pct=t>0?Math.round(a/t*100):0;document.getElementById('pbi').style.width=pct+'%';const pctEl=document.getElementById('pbi-pct');if(pctEl)pctEl.textContent=pct>3?pct+'%':'';}
+function uSH(){const h=document.getElementById('sticky-header');const sn=document.getElementById('sticky-nav');if(S.screen==='questionnaire'&&S.cQ!==null){const q=Q[S.cQ];h.style.display='block';document.getElementById('hT').textContent=q.icon+' '+q.title;document.getElementById('hS').textContent=q.subtitle;document.getElementById('hI').textContent=q.instruction;const aN=q.items.filter(it=>S.ans[q.id+'_'+it.n]!==undefined).length;sn.style.display='flex';sn.innerHTML=`<span style="font-family:'JetBrains Mono',monospace;font-size:.78em;color:var(--text-mut);">${aN}/${q.items.length}</span><button class="btn btn-p btn-sm" onclick="bH()">← Torna al menu</button>`;}else{h.style.display='none';sn.style.display='none';}}
+
+function rW(){const td=new Date().toISOString().split('T')[0];ap.innerHTML=`<div class="ws"><span class="ci">🧭</span><h1>Orientamento <span>Scolastico</span></h1><p>Un viaggio alla scoperta di te stesso: delle tue risorse, dei tuoi interessi e delle tue inclinazioni. Ogni questionario è un tassello che compone il mosaico unico della tua identità professionale.</p><div class="uf"><label>Nome e Cognome</label><input type="text" id="iN" value="${S.ui.nome}" placeholder="Il tuo nome..."><label>Età</label><input type="number" id="iE" value="${S.ui.eta}" placeholder="La tua età..." min="10" max="25"><label>Cellulare</label><input type="tel" id="iTel" value="${S.ui.tel}" placeholder="347 1234567 oppure +39 347 1234567" maxlength="16"><div id="telErr" style="color:var(--rose);font-size:.72em;margin:-8px 0 10px;display:none;">Inserisci un cellulare italiano valido (es. 347 1234567 o +39 347 1234567)</div><label>Email</label><input type="email" id="iEm" value="${S.ui.email}" placeholder="nome@esempio.it"><div id="emErr" style="color:var(--rose);font-size:.72em;margin:-8px 0 10px;display:none;">Formato: nome@dominio.ext</div><label>Data</label><input type="date" id="iD" value="${S.ui.data||td}"></div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><button class="btn btn-p" onclick="sJ()">🚀 Inizia il percorso</button><button class="btn btn-s btn-sm" onclick="tI()">📥 Importa sessione</button></div></div>`;}
+function sJ(){iA();const tel=document.getElementById('iTel').value.trim();const em=document.getElementById('iEm').value.trim();const telRe=/^((00|\+)39[\. ]?)?3\d{2}[\. ]?\d{6,7}$/;const emRe=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;let ok=true;const te=document.getElementById('telErr'),ee=document.getElementById('emErr');if(te)te.style.display='none';if(ee)ee.style.display='none';if(tel&&!telRe.test(tel)){if(te)te.style.display='block';document.getElementById('iTel').style.borderColor='var(--rose)';ok=false;}else{document.getElementById('iTel').style.borderColor='';}if(em&&!emRe.test(em)){if(ee)ee.style.display='block';document.getElementById('iEm').style.borderColor='var(--rose)';ok=false;}else{document.getElementById('iEm').style.borderColor='';}if(!ok)return;S.ui.nome=document.getElementById('iN').value;S.ui.eta=document.getElementById('iE').value;S.ui.tel=tel;S.ui.email=em;S.ui.data=document.getElementById('iD').value;S.screen='hub';pSta();R();}
+
+function rH(){const ti=Q.reduce((s,q)=>s+q.items.length,0),ta=Object.keys(S.ans).length,ac=ta===ti;
+let c=Q.map((q,i)=>{const t=q.items.length,a=q.items.filter(it=>S.ans[q.id+'_'+it.n]!==undefined).length,d=a===t,p=Math.round(a/t*100);
+return`<div class="qsc ${d?'done':''}" onclick="oQ(${i})"><span class="qb ${d?'ok':'no'}">${d?'✓':p+'%'}</span><span class="qi">${q.icon}</span><div class="qn">${q.title}</div><div class="qd">${t} domande · ${a}/${t}</div></div>`;}).join('');
+ap.innerHTML=`<div class="qsec"><div style="text-align:center;margin-bottom:24px;"><h2 style="font-family:'Playfair Display',serif;font-size:1.6em;margin-bottom:5px;">Il tuo percorso di scoperta</h2><p style="color:var(--text-sec);">${S.ui.nome?'Ciao <strong>'+S.ui.nome+'</strong>! ':''}Completa i questionari nell'ordine che preferisci. <span style="font-family:'JetBrains Mono',monospace;color:var(--accent);font-weight:700;">${ta}/${ti}</span></p></div><div class="tb"><button class="btn btn-s btn-sm" onclick="eS()">💾 Esporta</button><button class="btn btn-s btn-sm" onclick="tI()">📥 Importa</button>${ac?'<button class="btn btn-g btn-sm" onclick="sR()">📊 Genera Report</button>':''}${ta>0&&!ac?'<button class="btn btn-s btn-sm" onclick="sR()">📊 Report parziale</button>':''}</div><div class="qs">${c}</div></div>`;}
+
+function oQ(i){S.cQ=i;S.screen='questionnaire';pNav();R();window.scrollTo({top:0,behavior:'smooth'});}
+function rQ(){const q=Q[S.cQ],its=q.items,aN=its.filter(it=>S.ans[q.id+'_'+it.n]!==undefined).length;
+let h='<div class="qsec">';
+its.forEach(it=>{const k=q.id+'_'+it.n,v=S.ans[k],ia=v!==undefined;
+h+=`<div class="qc ${ia?'ans':''}" id="c-${k}"><div class="qnum">${it.r?'↻ ':''}DOMANDA ${it.n} di ${its.length}</div><div class="qt">${it.t}</div><div class="ls">${q.scale.map(s=>`<div class="lo ${v===s.v?'sel':''}" data-lv="${s.v}" onclick="sA('${k}',${s.v},this)"><span class="li">${['○','◔','◐','◕','●'][s.v]}</span><span class="lv">${s.v}</span><span class="ll">${s.l}</span></div>`).join('')}</div></div>`;});
+h+=`<div class="nb"><div class="nc" id="anc">${aN}/${its.length} risposte</div><button class="btn btn-p btn-sm" id="dnb" onclick="bH()">← Torna al menu</button></div></div>`;
+ap.innerHTML=h;}
+
+function sA(k,v,el){S.ans[k]=v;pSel();const c=document.getElementById('c-'+k);c.classList.add('ans');c.querySelectorAll('.lo').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');el.style.transform='scale(1.03)';setTimeout(()=>el.style.transform='',150);uP();
+const q=Q[S.cQ],aN=q.items.filter(it=>S.ans[q.id+'_'+it.n]!==undefined).length;const nc=document.getElementById('anc');if(nc)nc.textContent=aN+'/'+q.items.length+' risposte';const db=document.getElementById('dnb');if(db&&aN===q.items.length){db.style.background='var(--green)';db.textContent='✓ Completato';pCom();}uSH();autoSave();}
+function bH(){S.screen='hub';S.cQ=null;pNav();R();window.scrollTo({top:0,behavior:'smooth'});}
+
+function cS(){const r={};Q.forEach(q=>{r[q.id]={title:q.title,icon:q.icon,areas:{},allNeg:q.allNeg||false};for(const[n,ad] of Object.entries(q.areas)){let s=0,a=0;ad.i.forEach(in_=>{const v=S.ans[q.id+'_'+in_];if(v!==undefined){s+=v;a++;}});r[q.id].areas[n]={score:s,max:ad.m,pct:ad.m>0?Math.round(s/ad.m*100):0,answered:a,total:ad.i.length,desc:ad.d,neg:ad.neg||false};}});return r;}
+
+function gN(r){const nm=S.ui.nome||'amico/a';
+let t=`Ciao ${nm},\n\nquesto report è stato costruito a partire dalle tue risposte e racconta qualcosa di importante: racconta di te. Non è un giudizio, ma uno specchio — leggi con curiosità, come se stessi scoprendo una mappa del tuo mondo interiore.\n\n`;
+const fr=r.fronteggiamento;if(fr){const a=fr.areas['Ricerca di aiuto'],p=fr.areas['Progettualità'];t+='**Come affronti le sfide.** ';if(a.pct>60&&p.pct>60)t+=`Hai un doppio motore: sai chiedere aiuto (${a.pct}%) e sai pianificare (${p.pct}%). Pochi possiedono questo equilibrio. `;else if(a.pct>p.pct)t+=`Cerchi supporto negli altri (${a.pct}%) più che pianificare autonomamente (${p.pct}%). Prova ad allenarti a costruire un piano prima di chiedere. `;else t+=`Sei orientato alla pianificazione (${p.pct}%) più che alla ricerca di aiuto (${a.pct}%). La tua autonomia è un punto di forza. `;}
+const co=r.coping;if(co){const at=co.areas['Attivo'],ev=co.areas['Evitante'],em=co.areas['Emotivo'];t+='\n\n**Le tue strategie di coping.** ';t+=`Stile prevalente: ${at.pct>=em.pct?'attivo':'emotivo'} (Attivo ${at.pct}%, Emotivo ${em.pct}%). `;if(ev.pct>50)t+=`Attenzione alla componente evitante (${ev.pct}%): rimandare amplifica i problemi. `;else t+=`Componente evitante contenuta (${ev.pct}%): non ti tiri indietro. `;}
+const lo=r.locus;if(lo){const i=lo.areas['Interno'],e=lo.areas['Esterno'];t+='\n\n**Chi guida la tua vita?** ';if(i.pct>e.pct+15)t+=`Solido locus interno (${i.pct}% vs ${e.pct}%). Credi nel tuo impegno come motore del successo. `;else if(e.pct>i.pct+15)t+=`Tendi ad attribuire i risultati a fattori esterni (${e.pct}% vs ${i.pct}%). Potresti scoprire di avere più potere di quanto pensi. `;else t+=`Equilibrio tra interno (${i.pct}%) ed esterno (${e.pct}%): visione realistica. `;}
+const ba=r.barriere;if(ba){const s=Object.entries(ba.areas).sort((a,b)=>b[1].pct-a[1].pct);t+='\n\n**Il tuo percorso scolastico.** ';if(s[0][1].pct>50)t+=`Area critica: "${s[0][0]}" (${s[0][1].pct}%). Riconoscerlo è già il primo passo. `;else t+=`Nessuna criticità elevata — risorse solide. `;t+=`Area protetta: "${s[s.length-1][0]}" (${s[s.length-1][1].pct}%). `;}
+const ss=r.softskills;if(ss){const s=Object.entries(ss.areas).sort((a,b)=>b[1].pct-a[1].pct);t+='\n\n**Le tue competenze trasversali.** ';t+=`Punti di forza: "${s[0][0]}" (${s[0][1].pct}%) e "${s[1][0]}" (${s[1][1].pct}%). `;t+=`Margine di crescita: "${s[s.length-1][0]}" (${s[s.length-1][1].pct}%) e "${s[s.length-2][0]}" (${s[s.length-2][1].pct}%). `;}
+const cg=r.cognitivi;if(cg){const s=Object.entries(cg.areas).sort((a,b)=>b[1].pct-a[1].pct);t+='\n\n**Le tue intelligenze.** ';t+=`Aree forti: "${s[0][0]}" (${s[0][1].pct}%) e "${s[1][0]}" (${s[1][1].pct}%). `;t+=`"${s[s.length-1][0]}" (${s[s.length-1][1].pct}%) non è una mancanza: è territorio da esplorare. `;}
+const ap2=r.apprendimento;if(ap2){const s=Object.entries(ap2.areas).sort((a,b)=>b[1].pct-a[1].pct);t+='\n\n**Come impari meglio.** ';t+=`Il tuo stile dominante è "${s[0][0]}" (${s[0][1].pct}%)`;if(s[1][1].pct>50)t+=`, affiancato da "${s[1][0]}" (${s[1][1].pct}%)`;t+='. ';if(s[0][0]==='Attivo')t+='Impari facendo: laboratori, esperimenti e pratica diretta sono il tuo terreno fertile. Sfrutta ogni occasione per mettere le mani in pasta. ';else if(s[0][0]==='Riflessivo')t+='Hai bisogno di tempo per elaborare: appunti, riletture e momenti di riflessione sono i tuoi alleati. Non farti mettere fretta. ';else if(s[0][0]==='Teorico')t+='La tua mente cerca struttura: schemi, mappe concettuali e framework logici ti aiutano a costruire comprensione solida. ';else if(s[0][0]==='Pragmatico')t+="Vuoi vedere l'utilità pratica: collegare ogni concetto a un'applicazione reale è il modo migliore per fissarlo nella memoria. ";}
+const ct=r.contesto;if(ct){t+='\n\n**Io e il mio mondo.** ';const pf=ct.areas['Pressione Familiare'],sl=ct.areas['Supporto Familiare'],cl2=ct.areas['Contesto Linguistico'];if(pf&&pf.pct>60)t+='Sembra che in famiglia ci siano aspettative precise sulla tua scelta scolastica. Ricorda: ascoltare i consigli è importante, ma la scelta finale deve rispecchiare chi sei tu. ';else if(pf&&pf.pct<35)t+='Ti senti libero di scegliere il tuo percorso: questo è un buon punto di partenza. ';if(sl&&sl.pct<40)t+='Hai indicato di avere poco supporto a casa per le questioni scolastiche. Cerca figure di riferimento anche fuori dalla famiglia: insegnanti, educatori, allenatori. ';if(cl2&&cl2.pct>50)t+="Il fatto che a casa si parli un'altra lingua è una ricchezza, non un ostacolo. Tienine conto nella scelta del percorso. ";}
+const pa=r.passioni;if(pa){const s=Object.entries(pa.areas).sort((a,b)=>b[1].pct-a[1].pct);t+='\n\n**Cosa ti appassiona davvero.** ';t+=`"${s[0][0]}" (${s[0][1].pct}%) e "${s[1][0]}" (${s[1][1].pct}%). `;if(s[2][1].pct>50)t+=`Anche "${s[2][0]}" (${s[2][1].pct}%). `;t+='Le passioni sono il segnale più autentico di chi sei. ';}
+const ip=r.interessi;if(ip){const s=Object.entries(ip.areas).sort((a,b)=>b[1].pct-a[1].pct);t+='\n\n**Gli indirizzi scolastici più vicini a te.** ';t+=`"${s[0][0]}" (${s[0][1].pct}% — ${s[0][1].desc}) e "${s[1][0]}" (${s[1][1].pct}% — ${s[1][1].desc}). `;if(s[2][1].pct>40)t+=`Anche "${s[2][0]}" (${s[2][1].pct}%). `;t+='\n\nRicorda: questi dati non determinano il tuo futuro. Sono una bussola, non una sentenza. Il percorso è tuo, e qualunque direzione sceglierai, porterai con te tutte le risorse che hai scoperto oggi.';}
+return t;}
+
+function sR(){S.screen='report';pCom();R();window.scrollTo({top:0,behavior:'smooth'});}
+function rR(){const r=cS(),nr=gN(r);const cl=['#6366f1','#8b5cf6','#0891b2','#d97706','#059669','#e11d48','#ec4899','#14b8a6','#a855f7','#ef4444'];
+let h=`<div class="rp"><div class="ph"><h1>🧭 Orientamento Scolastico — Report Personale</h1><p>${S.ui.nome||''} · Età: ${S.ui.eta||''} · Tel: ${S.ui.tel||''} · Email: ${S.ui.email||''} · Data: ${S.ui.data||''}</p></div>
+<div class="tb no-print"><button class="btn btn-s btn-sm" onclick="bH()">← Questionari</button><button class="btn btn-p btn-sm" onclick="window.print()">🖨️ Stampa Report</button><button class="btn btn-s btn-sm" onclick="sOR()">📋 Report Operatore</button><button class="btn btn-s btn-sm" onclick="eS()">💾 Esporta</button></div>
+<div style="text-align:center;margin-bottom:24px;"><h2 style="font-family:'Playfair Display',serif;font-size:1.8em;">Il tuo profilo di orientamento</h2><p style="color:var(--text-sec);">${S.ui.nome||''} · ${S.ui.eta||''} anni · ${S.ui.tel?S.ui.tel+' · ':''} ${S.ui.email?S.ui.email+' · ':''}${S.ui.data||''}</p></div>
+<div class="rc"><h3>📖 La tua narrazione</h3><div class="nt">${nr.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div></div>`;
+Q.forEach((q,qi)=>{const qr=r[q.id];if(!qr)return;
+h+=`<div class="rc"><h3>${q.icon} ${q.title}</h3><p style="color:var(--text-sec);font-size:.82em;margin-bottom:12px;">${q.subtitle}</p>`;
+Object.entries(qr.areas).forEach(([n,d],i)=>{const c=d.neg?(d.pct>60?'#e11d48':d.pct>35?'#d97706':'#059669'):cl[i%cl.length];
+h+=`<div class="sbc"><div class="sbl"><span>${n}${d.neg?' ⚠️':''}</span><span>${d.score}/${d.max} (${d.pct}%)</span></div><div class="sb"><div class="sbf" style="width:${d.pct}%;background:${c};"></div></div></div>`;});
+h+=`<div class="cc"><canvas id="ch-${q.id}"></canvas></div></div>`;});
+h+=`</div>`;ap.innerHTML=h;setTimeout(()=>rCh(r),100);}
+
+function rCh(r){const cl=['rgba(99,102,241,.8)','rgba(139,92,246,.8)','rgba(8,145,178,.8)','rgba(217,119,6,.8)','rgba(5,150,105,.8)','rgba(225,29,72,.8)','rgba(236,72,153,.8)','rgba(20,184,166,.8)','rgba(168,85,247,.8)','rgba(239,68,68,.8)'];
+Q.forEach(q=>{const qr=r[q.id],cv=document.getElementById('ch-'+q.id);if(!cv||!qr)return;const lb=Object.keys(qr.areas),dt=lb.map(l=>qr.areas[l].pct),tp=lb.length>=4?'radar':'bar';
+if(tp==='radar'){new Chart(cv,{type:'radar',data:{labels:lb,datasets:[{label:q.title,data:dt,backgroundColor:'rgba(79,70,229,.08)',borderColor:'rgba(79,70,229,.65)',borderWidth:2,pointBackgroundColor:'rgba(79,70,229,1)',pointBorderColor:'#fff',pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{beginAtZero:true,max:100,ticks:{color:'#94a3b8',backdropColor:'transparent',font:{size:9}},grid:{color:'rgba(0,0,0,.05)'},pointLabels:{color:'#64748b',font:{size:10,family:'Source Sans 3'}}}},plugins:{legend:{display:false}}}});}
+else{new Chart(cv,{type:'bar',data:{labels:lb,datasets:[{data:dt,backgroundColor:cl.slice(0,lb.length),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',scales:{x:{beginAtZero:true,max:100,grid:{color:'rgba(0,0,0,.03)'},ticks:{color:'#94a3b8'}},y:{grid:{display:false},ticks:{color:'#64748b',font:{family:'Source Sans 3',size:11}}}},plugins:{legend:{display:false}}}});}});}
+
+function sOR(){const r=cS();let t=`=== REPORT ORIENTAMENTO SCOLASTICO ===\nNome: ${S.ui.nome}\nEtà: ${S.ui.eta}\nTelefono: ${S.ui.tel}\nEmail: ${S.ui.email}\nData: ${S.ui.data}\n\n--- ISTRUZIONI PER L'IA ---\nAnalizza questo profilo per orientamento scolastico/professionale.\n[R] = scala inversa (alto = negativo). [NEG] = area barriere.\n\n`;
+Q.forEach(q=>{t+=`\n=== ${q.title.toUpperCase()} ===\n${q.instruction}\n\nRisposte:\n`;q.items.forEach(it=>{const v=S.ans[q.id+'_'+it.n];t+=`  ${it.n}. ${it.t} ${it.r?'[R]':''} => ${v!==undefined?v:'N/R'} (${it.a})\n`;});t+=`\nPunteggi:\n`;const qr=r[q.id];for(const[n,d] of Object.entries(qr.areas))t+=`  ${n}${d.neg?' [NEG]':''}: ${d.score}/${d.max} (${d.pct}%) - ${d.desc}\n`;});
+t+=`\n=== FINE ===\n\n--- ISTRUZIONI OPERATIVE ---\nFASE 1: Leggi il profilo e genera 11-14 domande per il ragazzo/a (da inviare via WhatsApp). Le domande devono esplorare tre livelli: ancoraggio (episodi concreti legati ai dati salienti), esplorazione laterale (connessioni tra aree non esplicitate), area pre-conscia (domande proiettive/scenariche).\nFASE 2: Quando ricevi le risposte, costruisci un deep profile per l'operatore (motivatori intrinseci, identità emergente, area pre-conscia, vincoli reali vs percepiti, profilo di massimo gradimento scolastico).\nFASE 3: Genera un documento sintetico per il ragazzo/a e i genitori con: profilo narrativo, inclinazioni profonde, 3 percorsi scolastici consigliati, consiglio pratico, nota per i genitori. Se il profilo è incerto, privilegia percorsi a scelta differita.\n`;
+document.getElementById('opT').value=t;document.getElementById('opM').classList.add('act');}
+function cpOp(){const ta=document.getElementById('opT');ta.select();navigator.clipboard.writeText(ta.value).then(()=>{event.target.textContent='✓ Copiato!';setTimeout(()=>event.target.textContent='📋 Copia negli appunti',1800);});}
+function clMo(){document.getElementById('opM').classList.remove('act');}
+
+function eS(){const num=getNextSaveNum();const d2=new Date();const stamp=d2.getFullYear()+String(d2.getMonth()+1).padStart(2,'0')+String(d2.getDate()).padStart(2,'0')+'-'+String(d2.getHours()).padStart(2,'0')+String(d2.getMinutes()).padStart(2,'0');const nm=(S.ui.nome||'sessione').replace(/[^a-zA-Z0-9àèéìòùÀÈÉÌÒÙ]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');const d={version:2,saveNumber:num,timestamp:d2.toISOString(),userInfo:S.ui,answers:S.ans};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`${num}_${stamp}_orientamento_${nm}.json`;a.click();URL.revokeObjectURL(u);pCom();dirty=false;showToast('Esportato #'+num,'📥');}
+function tI(){document.getElementById('impI').click();}
+function hImp(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(ev){try{const d=JSON.parse(ev.target.result);if(d.answers&&d.userInfo){S.ans=d.answers;S.ui=d.userInfo;S.screen='hub';pSta();R();dirty=true;autoSave();showToast('Sessione importata','📥');}}catch(er){alert('File non valido.');}};r.readAsText(f);e.target.value='';}
+
+// ==================== STORAGE + AUTOSAVE + RESTORE ====================
+const Storage=(()=>{let mem={};let av=false;try{const k='__t_'+Math.random();localStorage.setItem(k,'1');localStorage.removeItem(k);av=true;}catch(e){av=false;}
+return{available:av,mode:av?'localStorage':'memoria',
+get(k){if(av){try{return localStorage.getItem(k);}catch(e){return mem[k]||null;}}return mem[k]||null;},
+set(k,v){if(av){try{localStorage.setItem(k,v);return true;}catch(e){mem[k]=v;return false;}}mem[k]=v;return false;},
+remove(k){if(av){try{localStorage.removeItem(k);}catch(e){}}delete mem[k];}};})();
+
+const KEY_SESSION='app09_session_current';
+const KEY_COUNTER='app09_export_counter';
+let dirty=false;
+let saveTimer=null;
+
+function showToast(txt,icon,type){const t=document.getElementById('toast');if(!t)return;document.getElementById('toastIc').textContent=icon||'💾';document.getElementById('toastTx').textContent=txt||'Salvato';t.className='';if(type)t.classList.add(type);void t.offsetWidth;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),1400);}
+
+function updateBadge(){const w=document.getElementById('svBadgeWrap');const b=document.getElementById('svBadge');const tx=document.getElementById('svBadgeTxt');if(!w||!b||!tx)return;if(S.screen==='welcome'||S.screen==='report'){w.classList.remove('show');return;}w.classList.add('show');const t=new Date();const hh=String(t.getHours()).padStart(2,'0');const mm=String(t.getMinutes()).padStart(2,'0');if(Storage.available){b.classList.remove('mem');tx.textContent='Salvato '+hh+':'+mm;}else{b.classList.add('mem');tx.textContent='⚠ Memoria '+hh+':'+mm;}}
+
+function autoSave(){if(saveTimer)return;saveTimer=setTimeout(()=>{saveTimer=null;const d={v:2,ts:new Date().toISOString(),ui:S.ui,ans:S.ans};const ok=Storage.set(KEY_SESSION,JSON.stringify(d));dirty=true;if(Storage.available&&ok){showToast('Salvato','💾');}else if(Storage.available&&!ok){showToast('Spazio pieno — esporta','⚠','warn');}else{showToast('Memoria temporanea — esporta','⚠','warn');}updateBadge();},180);}
+
+function loadPending(){const raw=Storage.get(KEY_SESSION);if(!raw)return null;try{const d=JSON.parse(raw);if(d&&d.ans&&Object.keys(d.ans).length>0)return d;}catch(e){}return null;}
+
+function showRestoreBanner(p){if(document.getElementById('rstBannerHost'))return;const n=Object.keys(p.ans||{}).length;const ts=p.ts?new Date(p.ts):null;const tsStr=ts?ts.toLocaleDateString('it-IT')+' '+ts.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}):'';const nm=(p.ui&&p.ui.nome)?p.ui.nome:'senza nome';const d=document.createElement('div');d.id='rstBannerHost';d.innerHTML=`<div class="rst-banner"><div class="rst-ic">📂</div><div class="rst-tx"><strong>Hai un questionario in corso.</strong><br>${nm} · ${n} risposte · ${tsStr}</div><div class="rst-bt"><button class="btn btn-p btn-sm" onclick="doRestore()">Continua</button><button class="btn btn-s btn-sm" onclick="doDiscard()">Nuovo</button></div></div>`;const ctn=document.getElementById('app');ctn.insertBefore(d,ctn.firstChild);}
+
+function doRestore(){const p=loadPending();if(!p)return;S.ui=Object.assign(S.ui||{},p.ui||{});S.ans=p.ans||{};dirty=true;const h=document.getElementById('rstBannerHost');if(h)h.remove();S.screen=(S.ui.nome&&S.ui.eta)?'hub':'welcome';R();showToast('Sessione ripristinata','📂');}
+
+function doDiscard(){Storage.remove(KEY_SESSION);dirty=false;const h=document.getElementById('rstBannerHost');if(h)h.remove();showToast('Nuova sessione','🆕');}
+
+function getNextSaveNum(){let n=parseInt(Storage.get(KEY_COUNTER)||'0',10);if(isNaN(n))n=0;n+=1;Storage.set(KEY_COUNTER,String(n));return String(n).padStart(3,'0');}
+
+window.addEventListener('beforeunload',function(e){if(dirty&&Object.keys(S.ans).length>0){e.preventDefault();e.returnValue='';return'';}});
+
+document.getElementById('sndT').addEventListener('click',function(){iA();S.snd=!S.snd;this.textContent=S.snd?'🔊':'🔇';if(S.snd)pSel();});
+window.addEventListener('scroll',()=>{const h=document.getElementById('sticky-header');if(window.scrollY>70)h.classList.add('compact');else h.classList.remove('compact');});
+R();
+// Check pending session after initial render
+(function(){const p=loadPending();if(p&&S.screen==='welcome'){setTimeout(()=>showRestoreBanner(p),80);}updateBadge();if(!Storage.available){setTimeout(()=>showToast('Storage limitato — ricorda di esportare','⚠','warn'),400);}})();
+</script>
+</body>
+</html>
